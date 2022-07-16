@@ -6,6 +6,9 @@ import streamlit as st
 from geopy.geocoders import Nominatim
 import pandas as pd
 from serpapi import GoogleSearch
+from boto.s3.connection import S3Connection
+
+#os.getenviron['Key]
 
 #Loading .env file
 def configure():
@@ -18,8 +21,8 @@ def getweather(lat, long):
     conn = http.client.HTTPSConnection("api-metoffice.apiconnect.ibmcloud.com")
 
     headers = {
-        'X-IBM-Client-Id': os.getenv('api_key'), #Replace os.getenv('api_key') with your API Key. Or use a .env file containing the creds
-        'X-IBM-Client-Secret': os.getenv('api_secret'), #Replace os.getenv('api_secret') with your API Secret
+        'X-IBM-Client-Id': S3Connection(os.getenviron('api_key')), #Replace os.getenv('api_key') with your API Key. Or use a .env file containing the creds
+        'X-IBM-Client-Secret': S3Connection(os.getenviron('api_secret')), #Replace os.getenv('api_secret') with your API Secret
         'accept': "application/json"
         }
 
@@ -102,7 +105,7 @@ def get48hrforecast():
     "q": f"{location} weather",
     "location": "United Kingdom",
     "gl": "uk",
-    "api_key": os.getenv('serpkey')
+    "api_key": S3Connection(os.getenviron('serpkey'))
     }
 
     search = GoogleSearch(params)
