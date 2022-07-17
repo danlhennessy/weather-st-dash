@@ -6,7 +6,6 @@ import streamlit as st
 from geopy.geocoders import Nominatim
 import pandas as pd
 from serpapi import GoogleSearch
-from boto.s3.connection import S3Connection
 
 
 #Loading .env file
