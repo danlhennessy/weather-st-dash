@@ -7,7 +7,7 @@ And Google Search data using SerpApi
 https://serpapi.com  
 
 Python Modules Used:  
--Streamlit
--Geopy/Nominatim
--Pandas
--SerpApi
+- Streamlit
+- Geopy/Nominatim
+- Pandas
+- SerpApi
