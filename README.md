@@ -6,6 +6,9 @@ https://www.metoffice.gov.uk/services/data/met-office-weather-datahub
 And Google Search data using SerpApi  
 https://serpapi.com  
 
+![alt text](https://github.com/danlhennessy/Streamlit/blob/master/weather/dashexample.png?raw=true)
+
+
 Python Modules Used:  
 - Streamlit
 - Geopy/Nominatim
