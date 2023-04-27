@@ -8,31 +8,33 @@ import pandas as pd
 from serpapi import GoogleSearch
 
 
-#Loading .env file
+# Loading .env file
 def configure():
     load_dotenv()
 
 
-#Bringing data from met API
+# Bringing data from met API
 def getweather(lat, long):
     configure()
     conn = http.client.HTTPSConnection("api-metoffice.apiconnect.ibmcloud.com")
 
     headers = {
-        'X-IBM-Client-Id': st.secrets['api_key'], #Replace os.getenv('api_key') with your API Key. Or use a .env file containing the creds
-        'X-IBM-Client-Secret': st.secrets['api_secret'], #Replace os.getenv('api_secret') with your API Secret
+        'X-IBM-Client-Id': os.getenv('api_key'),
+        'X-IBM-Client-Secret': os.getenv('api_secret'),
         'accept': "application/json"
         }
 
-    conn.request("GET", f"/v0/forecasts/point/three-hourly?excludeParameterMetadata=true&includeLocationName=true&latitude={lat}&longitude={long}", headers=headers)
+    conn.request(
+        "GET",
+        f"/v0/forecasts/point/three-hourly?excludeParameterMetadata=true&includeLocationName=true&latitude={lat}&longitude={long}",
+        headers=headers
+        )
 
     res = conn.getresponse()
     data = res.read()
-    js = json.loads(data) #Return data as JSON
+    js = json.loads(data)  # Return data as JSON
 
-    #return(data.decode("utf-8")) Uncomment this for original data return
     return js
-
 
 
 st.title("Weather Dashboard")
@@ -45,19 +47,33 @@ st.sidebar.markdown("""Pulling Info from Met Office Weather Datahub service
 """)
 check = st.sidebar.checkbox("Use Custom Latitude/Longitude")
 
-#Initialising Nominatim
+# Initialising Nominatim
 geolocator = Nominatim(user_agent="Streamlit")
 
 if not check:    
-    placechoice = st.text_input("Enter Location", key="keytext", value="London")
+    placechoice = st.text_input(
+        "Enter Location",
+        key="keytext",
+        value="London"
+        )
 
     mylocation = geolocator.geocode(placechoice) # Using Nominatim to get lat/long coords from Location
     choice1 = mylocation.latitude
     choice2 = mylocation.longitude
 
 if check:
-    choice1 = st.number_input('Latitude', min_value = -85, max_value = 85, key="keylat")
-    choice2 = st.number_input('Longitude', min_value = -180, max_value = 179, key="keylong")
+    choice1 = st.number_input(
+        'Latitude',
+        min_value=-85,
+        max_value=85,
+        key="keylat"
+        )
+    choice2 = st.number_input(
+        'Longitude',
+        min_value=-180,
+        max_value=179,
+        key="keylong"
+        )
     
 # Narrowing down JSON
 data = getweather(choice1, choice2)
@@ -66,8 +82,9 @@ timeSeries0 = data["features"][0]["properties"]["timeSeries"][0]
 alltimeseries = data["features"][0]["properties"]["timeSeries"]
 
 tdate = alltimeseries[1]["time"][:10]
-#24 Hour Temperature graph
 
+
+# 24 Hour Temperature graph
 def graphtemp():
     date = []
     temp = []
@@ -78,15 +95,15 @@ def graphtemp():
     df.index = pd.to_datetime(df.index)
     return df
 
-# Metrics Title  
 
-col1,col2,col3 = st.columns(3)
+# Metrics Title
+col1, col2, col3 = st.columns(3)
 with col2:
     st.title(location)
     st.caption(f"Lat: {choice1}, Long: {choice2}")
 with st.expander(f"24 Hour Temperature Chart - {tdate}"):
     st.line_chart(graphtemp())
-st.header(f"48 Hour Forecast")
+st.header("48 Hour Forecast")
 
 # Formatting page to display metrics
 
@@ -94,16 +111,17 @@ col1, col2, col3, col4, col5 = st.columns([2,2,3,3,2])
 
 days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
+
 def get48hrforecast():
     
     # Grab Images using SerpAPI
     configure()
     params = {
-    "engine": "google",
-    "q": f"{location} weather",
-    "location": "United Kingdom",
-    "gl": "uk",
-    "api_key": st.secrets['serpkey']
+        "engine": "google",
+        "q": f"{location} weather",
+        "location": "United Kingdom",
+        "gl": "uk",
+        "api_key": os.getenv('serpkey')
     }
 
     search = GoogleSearch(params)
@@ -113,7 +131,7 @@ def get48hrforecast():
     else:
         ansbox = None
 
-    #Start Building Metrics Table
+    # Start Building Metrics Table
     tdate = timeSeries0["time"][:10]
     dof = pd.Timestamp(tdate)
     temp1, temp2, temp3 = timeSeries0["feelsLikeTemp"], timeSeries0["windSpeed10m"], timeSeries0["probOfRain"]
@@ -143,5 +161,6 @@ def get48hrforecast():
         col5.metric("Rain Probability", f'{r}%', f"{round(r - temp3, 2)} %")
         temp1, temp2, temp3 = t, w, r
 
-        
-get48hrforecast()
+
+if __name__ == "__main__":
+    get48hrforecast()
